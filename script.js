@@ -1115,11 +1115,12 @@ Firebase 초기화에 실패했습니다.
             const beforeToday = filteredRecords.filter(record => record.date < today);
             const afterToday = filteredRecords.filter(record => record.date > today);
             
-            // 현재일자 이후 데이터는 내림차순, 이전 데이터는 오름차순으로 정렬
+            // 현재일자 이후 데이터는 내림차순 (미래 → 현재), 이전 데이터는 오름차순 (과거 → 현재)
             const sortedAfterToday = afterToday.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
             const sortedBeforeToday = beforeToday.sort((a, b) => a.date.localeCompare(b.date));
             
             // [현재일자, 이후데이터(내림차순), 이전데이터(오름차순)] 순서로 배치
+            // 결과: [2025-08-25, 2025-08-26, 2025-08-27, ..., 2025-08-24, 2025-08-23, ...]
             sorted = [todayRecord, ...sortedAfterToday, ...sortedBeforeToday];
             
             console.log('년월조회: 현재일자를 첫행으로 처리', { 
@@ -1131,7 +1132,7 @@ Firebase 초기화에 실패했습니다.
             });
           } else {
             // 현재일자가 데이터에 없으면: 현재일자를 기준으로 정렬
-            // 현재일자보다 이전 데이터는 오름차순, 이후 데이터는 내림차순
+            // 현재일자보다 이후 데이터는 내림차순 (미래 → 현재), 이전 데이터는 오름차순 (과거 → 현재)
             const beforeToday = filteredRecords.filter(record => record.date < today);
             const afterToday = filteredRecords.filter(record => record.date > today);
             
@@ -1140,6 +1141,7 @@ Firebase 초기화에 실패했습니다.
             const sortedBeforeToday = beforeToday.sort((a, b) => a.date.localeCompare(b.date));
             
             // 현재일자 이후 데이터를 먼저, 이전 데이터를 나중에 배치
+            // 결과: [2025-08-26, 2025-08-27, ..., 2025-08-24, 2025-08-23, ...]
             sorted = [...sortedAfterToday, ...sortedBeforeToday];
             
             console.log('년월조회: 현재일자가 없어도 현재일자 기준으로 정렬', { 
