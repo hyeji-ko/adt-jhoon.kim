@@ -45,7 +45,7 @@
     
     // 페이지네이션 관련 변수
     let currentPage = 0;
-    const pageSize = 7; // 7일 단위
+    const pageSize = 6; // 6일 단위
     
     // 현재 선택된 년월 - 항상 현재일자로 설정
     let selectedYear = new Date().getFullYear();
@@ -1156,20 +1156,17 @@ Firebase 초기화에 실패했습니다.
           // 현재일자가 첫 페이지의 첫행이 되도록 페이지 설정
           currentPage = 0;
         } else {
-          // 페이지네이션 클릭 시: 현재일자를 제외하고 기존 정렬 유지
-          const today = new Date().toISOString().split('T')[0];
-          const recordsWithoutToday = filteredRecords.filter(record => record.date !== today);
-          sorted = [...recordsWithoutToday].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+          // 페이지네이션 클릭 시: 현재일자를 포함하여 정상적으로 정렬 (제외하지 않음)
+          sorted = [...filteredRecords].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
           
-          console.log('페이지네이션: 현재일자 제외하여 정렬', { 
-            today, 
+          console.log('페이지네이션: 현재일자 포함하여 정렬', { 
             totalRecords: sorted.length,
             firstRecord: sorted[0]?.date 
           });
         }
         
-        // 7일 단위로 페이지 계산
-        totalPages = Math.ceil(sorted.length / pageSize);
+// 6일 단위로 페이지 계산
+totalPages = Math.ceil(sorted.length / pageSize);
         
         console.log('renderGrid 호출:', { 
           isPaginationClick, 
