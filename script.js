@@ -203,6 +203,7 @@
       selectedMonth = now.getMonth() + 1;
       updateMonthDisplay();
       
+      // 조회버튼 클릭 시 조회년월에 해당하는 현재 날짜를 첫행으로 처리
       // 현재일자 페이지로 이동하기 위해 currentPage를 -1로 설정 (renderGrid에서 자동 계산)
       currentPage = -1;
       
@@ -300,7 +301,7 @@
       updateCalendarDisplay();
     });
     
-    // 월 선택 이벤트
+    // 월 선택 이벤트 - 조회년월 변경 시 현재일자 페이지로 이동
     monthItems.forEach(item => {
       item.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -313,7 +314,7 @@
       });
     });
     
-    // 년도 선택 이벤트
+    // 년도 선택 이벤트 - 조회년월 변경 시 현재일자 페이지로 이동
     yearItems.forEach(item => {
       item.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -721,7 +722,7 @@ Firebase 초기화에 실패했습니다.
     uploadBtn.disabled = false;
     batchDeleteBtn.disabled = false;
     
-    // 초기 로드 시 현재일자 페이지로 이동하기 위해 currentPage를 -1로 설정
+    // 초기 로드 시 조회년월에 해당하는 현재 날짜를 첫행으로 처리하기 위해 currentPage를 -1로 설정
     currentPage = -1;
     
     try {
@@ -1108,6 +1109,7 @@ Firebase 초기화에 실패했습니다.
         
         // 페이지네이션 클릭이 아닌 경우에만 현재일자 페이지로 이동
         if (!isPaginationClick) {
+          // 조회버튼 클릭 시 조회년월에 해당하는 현재 날짜를 첫행으로 처리
           // 현재일자가 첫 번째 행에 표시되도록 페이지 계산
           const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
           const todayIndex = sorted.findIndex(record => record.date === today);
@@ -1115,11 +1117,12 @@ Firebase 초기화에 실패했습니다.
           if (todayIndex !== -1) {
             // 현재일자가 데이터에 있으면 해당 페이지로 설정
             currentPage = Math.floor(todayIndex / pageSize);
+            console.log('조회버튼 클릭: 현재일자 페이지로 이동', { today, todayIndex, calculatedPage: currentPage });
           } else {
             // 현재일자가 데이터에 없으면 첫 페이지로 설정
             currentPage = 0;
+            console.log('조회버튼 클릭: 현재일자가 데이터에 없어 첫 페이지로 이동', { today, todayIndex, calculatedPage: currentPage });
           }
-          console.log('현재일자 페이지로 이동:', { today, todayIndex, calculatedPage: currentPage });
         }
         
         // 페이지 범위 검증
@@ -1407,7 +1410,7 @@ Firebase 초기화에 실패했습니다.
         }
       });
       
-      // 데이터 새로고침 (현재일자 페이지로 이동)
+      // 데이터 새로고침 (조회년월에 해당하는 현재 날짜를 첫행으로 처리)
       await renderGrid(false);
       
       // 조회 버튼 활성화
