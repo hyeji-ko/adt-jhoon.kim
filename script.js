@@ -1123,13 +1123,12 @@ Firebase 초기화에 실패했습니다.
             // 결과: [2025-08-25, 2025-08-26, 2025-08-27, ..., 2025-08-24, 2025-08-23, ...]
             sorted = [todayRecord, ...sortedAfterToday, ...sortedBeforeToday];
             
-            console.log('년월조회: 현재일자를 첫행으로 처리', { 
-              today, 
-              todayIndex, 
-              currentPage, 
-              totalRecords: sorted.length,
-              firstRecord: sorted[0]?.date 
-            });
+                         console.log('년월조회: 현재일자를 첫행으로 처리', { 
+               today, 
+               currentPage, 
+               totalRecords: sorted.length,
+               firstRecord: sorted[0]?.date 
+             });
           } else {
             // 현재일자가 데이터에 없으면: 현재일자를 기준으로 정렬
             // 현재일자보다 이후 데이터는 내림차순 (미래 → 현재), 이전 데이터는 오름차순 (과거 → 현재)
