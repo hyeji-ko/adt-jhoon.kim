@@ -1111,17 +1111,16 @@ Firebase 초기화에 실패했습니다.
           const todayRecord = filteredRecords.find(record => record.date === today);
           
           if (todayRecord) {
-            // 현재일자가 데이터에 있으면: 현재일자부터 내림차순 정렬 (현재일자가 첫행)
-            const todayIndex = filteredRecords.findIndex(record => record.date === today);
-            const beforeToday = filteredRecords.slice(0, todayIndex);
-            const afterToday = filteredRecords.slice(todayIndex);
+            // 현재일자가 데이터에 있으면: 현재일자를 첫행으로 하고, 이후 데이터는 내림차순, 이전 데이터는 오름차순
+            const beforeToday = filteredRecords.filter(record => record.date < today);
+            const afterToday = filteredRecords.filter(record => record.date > today);
             
             // 현재일자 이후 데이터는 내림차순, 이전 데이터는 오름차순으로 정렬
             const sortedAfterToday = afterToday.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
             const sortedBeforeToday = beforeToday.sort((a, b) => a.date.localeCompare(b.date));
             
-            // 현재일자 이후 데이터를 먼저, 이전 데이터를 나중에 배치
-            sorted = [...sortedAfterToday, ...sortedBeforeToday];
+            // [현재일자, 이후데이터(내림차순), 이전데이터(오름차순)] 순서로 배치
+            sorted = [todayRecord, ...sortedAfterToday, ...sortedBeforeToday];
             
             console.log('년월조회: 현재일자를 첫행으로 처리', { 
               today, 
