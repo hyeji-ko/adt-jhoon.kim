@@ -1123,9 +1123,6 @@ Firebase 초기화에 실패했습니다.
             // 현재일자 이후 데이터를 먼저, 이전 데이터를 나중에 배치
             sorted = [...sortedAfterToday, ...sortedBeforeToday];
             
-            // 현재일자가 첫 페이지의 첫행이 되도록 페이지 설정
-            currentPage = 0;
-            
             console.log('년월조회: 현재일자를 첫행으로 처리', { 
               today, 
               todayIndex, 
@@ -1134,16 +1131,30 @@ Firebase 초기화에 실패했습니다.
               firstRecord: sorted[0]?.date 
             });
           } else {
-            // 현재일자가 데이터에 없으면: 최신일자부터 내림차순 정렬
-            sorted = [...filteredRecords].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
-            currentPage = 0;
-            console.log('년월조회: 현재일자가 없어 최신일자부터 표시', { 
+            // 현재일자가 데이터에 없으면: 현재일자를 기준으로 정렬
+            // 현재일자보다 이전 데이터는 오름차순, 이후 데이터는 내림차순
+            const beforeToday = filteredRecords.filter(record => record.date < today);
+            const afterToday = filteredRecords.filter(record => record.date > today);
+            
+            // 현재일자 이후 데이터는 내림차순, 이전 데이터는 오름차순으로 정렬
+            const sortedAfterToday = afterToday.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+            const sortedBeforeToday = beforeToday.sort((a, b) => a.date.localeCompare(b.date));
+            
+            // 현재일자 이후 데이터를 먼저, 이전 데이터를 나중에 배치
+            sorted = [...sortedAfterToday, ...sortedBeforeToday];
+            
+            console.log('년월조회: 현재일자가 없어도 현재일자 기준으로 정렬', { 
               today, 
               currentPage, 
               totalRecords: sorted.length,
-              firstRecord: sorted[0]?.date 
+              firstRecord: sorted[0]?.date,
+              beforeTodayCount: beforeToday.length,
+              afterTodayCount: afterToday.length
             });
           }
+          
+          // 현재일자가 첫 페이지의 첫행이 되도록 페이지 설정
+          currentPage = 0;
         } else {
           // 페이지네이션 클릭 시: 기존 정렬 유지
           sorted = [...filteredRecords].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
