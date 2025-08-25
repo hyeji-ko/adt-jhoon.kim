@@ -204,10 +204,10 @@
       updateMonthDisplay();
       
       // 조회버튼 클릭 시 조회년월에 해당하는 현재 날짜를 첫행으로 처리
-      // 현재일자 페이지로 이동하기 위해 currentPage를 -1로 설정 (renderGrid에서 자동 계산)
+      // 현재일자를 첫행으로 처리하기 위해 currentPage를 -1로 설정 (renderGrid에서 자동 계산)
       currentPage = -1;
       
-      await renderGrid(false); // 현재일자 페이지로 이동
+      await renderGrid(false); // 현재일자를 첫행으로 처리
     });
     
     // 일괄삭제 버튼 이벤트 리스너
@@ -301,7 +301,7 @@
       updateCalendarDisplay();
     });
     
-    // 월 선택 이벤트 - 조회년월 변경 시 현재일자 페이지로 이동
+    // 월 선택 이벤트 - 조회년월 변경 시 현재일자를 첫행으로 처리
     monthItems.forEach(item => {
       item.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -309,12 +309,12 @@
         selectedMonth = month;
         updateMonthDisplay();
         monthCalendar.classList.add("hidden");
-        currentPage = -1; // 선택 시 현재일자 페이지로 이동
-        await renderGrid(false); // 현재일자 페이지로 이동
+        currentPage = -1; // 선택 시 현재일자를 첫행으로 처리
+        await renderGrid(false); // 현재일자를 첫행으로 처리
       });
     });
     
-    // 년도 선택 이벤트 - 조회년월 변경 시 현재일자 페이지로 이동
+    // 년도 선택 이벤트 - 조회년월 변경 시 현재일자를 첫행으로 처리
     yearItems.forEach(item => {
       item.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -323,8 +323,8 @@
         updateCalendarDisplay();
         updateMonthDisplay();
         monthCalendar.classList.add("hidden");
-        currentPage = -1; // 선택 시 현재일자 페이지로 이동
-        await renderGrid(false); // 현재일자 페이지로 이동
+        currentPage = -1; // 선택 시 현재일자를 첫행으로 처리
+        await renderGrid(false); // 현재일자를 첫행으로 처리
       });
     });
     
@@ -726,7 +726,7 @@ Firebase 초기화에 실패했습니다.
     currentPage = -1;
     
     try {
-      await renderGrid(false); // 초기 로드 시 현재일자 페이지로 이동
+      await renderGrid(false); // 초기 로드 시 현재일자를 첫행으로 처리
     } catch (e) {
       console.error("초기 데이터 로드 실패:", e);
       alert(`데이터 로드 실패: ${e.message}\n\nFirebase 연결을 확인해주세요.`);
@@ -1099,35 +1099,75 @@ Firebase 초기화에 실패했습니다.
           return;
         }
 
-        // Sort by date desc for display (최신일자가 첫 번째로 표시)
-        const sorted = [...filteredRecords].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
-
-        // 7일 단위로 페이지 계산
-        const totalPages = Math.ceil(sorted.length / pageSize);
+        // 년월조회 시 현재일자를 첫행으로 처리하기 위한 정렬 및 페이지 계산
+        let sorted;
+        let totalPages;
         
-        console.log('renderGrid 호출:', { isPaginationClick, currentPage, totalPages, filteredRecordsLength: filteredRecords.length });
-        
-        // 페이지네이션 클릭이 아닌 경우에만 현재일자 페이지로 이동
         if (!isPaginationClick) {
-          // 조회버튼 클릭 시 조회년월에 해당하는 현재 날짜를 첫행으로 처리
-          // 현재일자가 첫 번째 행에 표시되도록 페이지 계산
+          // 조회버튼 클릭 또는 년월 변경 시: 현재일자를 첫행으로 처리
           const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
-          const todayIndex = sorted.findIndex(record => record.date === today);
           
-          if (todayIndex !== -1) {
-            // 현재일자가 데이터에 있으면 해당 페이지로 설정
-            currentPage = Math.floor(todayIndex / pageSize);
-            console.log('조회버튼 클릭: 현재일자 페이지로 이동', { today, todayIndex, calculatedPage: currentPage });
-          } else {
-            // 현재일자가 데이터에 없으면 첫 페이지로 설정
+          // 현재일자가 포함된 데이터를 찾아서 첫행으로 정렬
+          const todayRecord = filteredRecords.find(record => record.date === today);
+          
+          if (todayRecord) {
+            // 현재일자가 데이터에 있으면: 현재일자부터 내림차순 정렬 (현재일자가 첫행)
+            const todayIndex = filteredRecords.findIndex(record => record.date === today);
+            const beforeToday = filteredRecords.slice(0, todayIndex);
+            const afterToday = filteredRecords.slice(todayIndex);
+            
+            // 현재일자 이후 데이터는 내림차순, 이전 데이터는 오름차순으로 정렬
+            const sortedAfterToday = afterToday.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+            const sortedBeforeToday = beforeToday.sort((a, b) => a.date.localeCompare(b.date));
+            
+            // 현재일자 이후 데이터를 먼저, 이전 데이터를 나중에 배치
+            sorted = [...sortedAfterToday, ...sortedBeforeToday];
+            
+            // 현재일자가 첫 페이지의 첫행이 되도록 페이지 설정
             currentPage = 0;
-            console.log('조회버튼 클릭: 현재일자가 데이터에 없어 첫 페이지로 이동', { today, todayIndex, calculatedPage: currentPage });
+            
+            console.log('년월조회: 현재일자를 첫행으로 처리', { 
+              today, 
+              todayIndex, 
+              currentPage, 
+              totalRecords: sorted.length,
+              firstRecord: sorted[0]?.date 
+            });
+          } else {
+            // 현재일자가 데이터에 없으면: 최신일자부터 내림차순 정렬
+            sorted = [...filteredRecords].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+            currentPage = 0;
+            console.log('년월조회: 현재일자가 없어 최신일자부터 표시', { 
+              today, 
+              currentPage, 
+              totalRecords: sorted.length,
+              firstRecord: sorted[0]?.date 
+            });
           }
+        } else {
+          // 페이지네이션 클릭 시: 기존 정렬 유지
+          sorted = [...filteredRecords].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
         }
         
-        // 페이지 범위 검증
-        if (currentPage < 0) currentPage = 0;
-        if (currentPage >= totalPages) currentPage = totalPages - 1;
+        // 7일 단위로 페이지 계산
+        totalPages = Math.ceil(sorted.length / pageSize);
+        
+        console.log('renderGrid 호출:', { 
+          isPaginationClick, 
+          currentPage, 
+          totalPages, 
+          filteredRecordsLength: filteredRecords.length,
+          firstRecordDate: sorted[0]?.date 
+        });
+        
+        // 페이지 범위 검증 (년월조회 시에는 항상 첫 페이지)
+        if (!isPaginationClick) {
+          currentPage = 0; // 년월조회 시 항상 첫 페이지
+        } else {
+          // 페이지네이션 클릭 시에만 페이지 범위 검증
+          if (currentPage < 0) currentPage = 0;
+          if (currentPage >= totalPages) currentPage = totalPages - 1;
+        }
         
         console.log('최종 페이지 정보:', { currentPage, totalPages, startIndex: currentPage * pageSize });
         
