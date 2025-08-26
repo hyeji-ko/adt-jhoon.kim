@@ -1094,6 +1094,9 @@ Firebase 초기화에 실패했습니다.
           tbody.appendChild(tr);
           paginationNav.classList.add("hidden");
           
+          // 페이지 정보 클리어
+          pageInfo.textContent = "";
+          
           // 로딩 모달 제거
           loadingModal.remove();
           return;
